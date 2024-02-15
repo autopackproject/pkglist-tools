@@ -4,8 +4,6 @@
 ./tools/gen --criteria=cpp --output=db/cpp-list.txt
 
 # download specs files
-for url in $(cat db/cpp-list.txt); do 
-    (cd db/srcs; wget $url);
-done
+for url in $(cat db/cpp-list.txt); do wget -O db/srcs/$(basename $url) $url; done
 
 for f in $(ls db/srcs/); do rpmdev-spectool -l db/srcs/$f; done  > db/cpp-sources.txt
