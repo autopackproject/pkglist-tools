@@ -1,0 +1,59 @@
+#!/usr/bin/env python3
+import subprocess
+
+import click
+import requests
+
+
+def get_pkg_list(criteria):
+    args = [
+        'dnf',
+        'search',
+        criteria
+    ]
+    p = subprocess.run(args, capture_output=True)
+
+    pkgs = {}
+
+    for full_name in p.stdout.decode().split('\n'):
+        if not full_name or full_name.startswith('='):
+            continue
+
+        name = full_name.split('.')[0]
+        pkgs[name] = True
+
+    return [k for k in pkgs.keys()]
+
+
+def get_pkg_info(name):
+    url = f'https://mdapi.fedoraproject.org/f39/pkg/{name}'
+
+    res = requests.get(url)
+
+    return res.json()
+
+
+@click.command
+@click.option('--criteria', '-c')
+@click.option('--output', '-o')
+@click.pass_context
+def cli(ctx, criteria, output):
+    pkgs = get_pkg_list(criteria)
+    data = []
+
+    for pkg in pkgs:
+        try:
+            info = get_pkg_info(pkg)
+        except Exception:
+            print(f'ERR: {pkg}')
+            break
+        url = info['url']
+        data.append((pkg, url))
+        print(url)
+
+    with open(output, 'w+') as f:
+        f.write('\n'.join([' '.join(t) for t in data]))
+
+
+if __name__ == '__main__':
+    cli()

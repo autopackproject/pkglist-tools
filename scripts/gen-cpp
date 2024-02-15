@@ -1,0 +1,3 @@
+#!/bin/bash
+
+./tools/gen --criteria=cpp --output=db/cpp-list.txt
