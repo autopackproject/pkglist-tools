@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import re
+import json
 import subprocess
 
 import click
@@ -33,26 +35,39 @@ def get_pkg_info(name):
     return res.json()
 
 
+def get_source_url(spec_url):
+    res = requests.get(spec_url)
+
+    return re.findall(p, spec_url)
+
+
 @click.command
 @click.option('--criteria', '-c')
 @click.option('--output', '-o')
 @click.pass_context
 def cli(ctx, criteria, output):
     pkgs = get_pkg_list(criteria)
-    data = []
+    tmp = {}
+    data = {}
 
     for pkg in pkgs:
-        try:
-            info = get_pkg_info(pkg)
-        except Exception:
-            print(f'ERR: {pkg}')
-            break
-        url = info['url']
-        data.append((pkg, url))
-        print(url)
+        parts = pkg.split('-')
+        if len(parts) > 1:
+            n = '-'.join(pkg.split('-')[:-1])
+        else:
+            n = pkg
 
-    with open(output, 'w+') as f:
-        f.write('\n'.join([' '.join(t) for t in data]))
+        tmp[n] = True
+
+    for k in tmp.keys():
+        url = f'https://src.fedoraproject.org/rpms/{k}/raw/rawhide/f/{k}.spec'
+        res = requests.get(url)
+        print(f'{url} - {res.status_code}')
+        if res.status_code == 200:
+            data[k] = url
+
+        with open(output, 'w+') as f:
+            f.write('\n'.join(data.values()))
 
 
 if __name__ == '__main__':
