@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autopack-rpm-specs
+  namespace: autopack
+  labels:
+    app: autopack-rpm-specs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: autopack-rpm-specs
+  template:
+    metadata:
+      labels:
+        app: autopack-rpm-specs
+    spec:
+      containers:
+      - name: server
+        image: quay.io/lrossett/autopack-pkglist-tools:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080

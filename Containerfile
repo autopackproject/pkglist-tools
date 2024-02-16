@@ -5,7 +5,10 @@ ARG AUTOPACK_DATA_DIR=${AUTOPACK_HOME}/data
 
 RUN dnf install -y wget xz python3-click nginx
 
-RUN mkdir -p ${AUTOPACK_DATA_DIR}
+RUN mkdir -p ${AUTOPACK_DATA_DIR} && \
+chown -R 1001:root ${AUTOPACK_DATA_DIR} && \
+chown -R 1001:root /var/log/nginx && \
+chmod -R 770 /var/log/nginx
 
 RUN wget \
 -O ${AUTOPACK_DATA_DIR}/rpm-specs-latest.tar.xz  \
